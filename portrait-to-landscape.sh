@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "The script has started"
+
 cd input
 echo "Upscaling with waifu2x"
 
@@ -9,15 +10,10 @@ list=$(ls *)
 for img in $list
 do
     height=$(convert -ping $img -format "%h" info:)
-    if [ "$height" -lt "2160" ]
+    width=$(convert -ping $img -format "%w" info: 2>/dev/null)
+    if [ "$height" -lt "2160" ] && [ "$width" -lt "3840" ]
     then
         mv $img ../1
-    fi
-
-    width=$(convert -ping $img -format "%w" info: 2>/dev/null)
-    if [ "$width" -lt "3840" ]
-    then
-        mv $img ../1 2>/dev/null
     fi
 done
 echo "Preperations are ready for waifu2x"
@@ -33,13 +29,8 @@ do
     for img in $list
     do
         height=$(convert -ping $img -format "%h" info:)
-        if [ "$height" -lt "2160" ]
-        then
-            mv $img ../1
-        fi
-
         width=$(convert -ping $img -format "%w" info: 2>/dev/null)
-        if [ "$width" -lt "3840" ]
+        if [ "$height" -lt "2160" ] && [ "$width" -lt "3840" ]
         then
             mv $img ../1
         fi
@@ -60,7 +51,7 @@ done
 # Change everything to png
 echo "Changing everything to png"
 cd ../output
-list=$(ls -A | grep -v ".png")
+list=$(ls -A 1 | grep -v ".png")
 for img in $list
 do
     inname=$(convert -ping $img -format "%t" info:)
