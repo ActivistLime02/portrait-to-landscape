@@ -19,7 +19,7 @@ Place your images in the input directory. The images in this directory may or ma
 
 ## To do
 
-- [ ] Fix terminal output of line 18 and 43
-- [ ] Option to disable upscaling with waifu2x
-- [ ] Option to choose cpu or gpu with upscaling 
-- [ ] Option to choose resolution
+- Use tmpfs to reduce unnecessary disk io
+- Option to disable upscaling with waifu2x
+- Option to choose cpu or gpu with waifu2x
+- Option to choose resolution

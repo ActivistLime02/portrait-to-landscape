@@ -38,8 +38,10 @@ do
     cd ..
 done
 echo "Waifu2x is done"
-mv 2/* input/
 
+mv 2/* input/ 2>/dev/null
+
+echo "Starting to convert images"
 cd input
 list=$(ls *) # List all the pictures in the folder
 for img in $list
@@ -51,7 +53,7 @@ done
 # Change everything to png
 echo "Changing everything to png"
 cd ../output
-list=$(ls -A 1 | grep -v ".png")
+list=$(ls -A | grep -v ".png")
 for img in $list
 do
     inname=$(convert -ping $img -format "%t" info:)
