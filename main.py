@@ -6,7 +6,7 @@ from PIL import Image
 # To get the width and height of a picture in pixels
 import shutil
 # To move files around
-from multiprocessing import Pool
+import multiprocessing
 # To use all the cpu cores available for parallel computing
 
 # Making a function because it will be used twice and for practice
@@ -24,7 +24,7 @@ for item in os.listdir() :
     shutil.move(item, "../inbetween")
 os.chdir("..")
 
-print("Preperations are mode for upscaling with waifu2x-ncnn-vulkan.")
+print("Preperations are made for upscaling with waifu2x-ncnn-vulkan.")
 while os.listdir("1") != [] :
     subprocess.run(["waifu2x-ncnn-vulkan","-i","1","-o","2"])
     os.chdir("1")
@@ -40,6 +40,8 @@ print("I will now start to edit the pictures.")
 os.chdir("inbetween")
 for item in os.listdir() :
     subprocess.run(["convert","-size","3840x2160","xc:black",item,"-resize","3840x2160^","-blur","0x25","-gravity","center","-composite",item,"-geometry","3840x2160","-gravity","center","-composite","../inbetween2/"+item])
+    # remove the item to clean inbetween? Here or a line lower outside of the indent
+    # Maybe optimize with multiprocessing like with the with optimization? Only half of the cpu is enough I think.
 os.chdir("..")
 
 print("I will change everything in to a png.")
@@ -48,17 +50,18 @@ for item in os.listdir() :
     if ".jpg" in item :
         item_with_png = item.replace(".jpg", ".png")
         subprocess.run(["convert",item,item_with_png])
+        os.remove(item)
 
 
 print("I will now start with optimizing the png files.")
 def optimize(image) :
     subprocess.run(["oxipng","-Z","-s","all",image])
-    shutil.move(image, "../output")
+    #shutil.move(image, "../output")
 
 if __name__ == "__main__" :
-    pool = multiprocessing.Pool()
+    pool = multiprocessing.Pool(1)
     for image in os.listdir() :
-        pool.imap_unordered(optimize, args=(image,))
+        pool.apply_async(optimize, args=image)
     pool.close()
     pool.join()
 # https://stackoverflow.com/questions/20886565/using-multiprocessing-process-with-a-maximum-number-of-simultaneous-processes
