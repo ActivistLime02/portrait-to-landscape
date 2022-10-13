@@ -37,5 +37,33 @@ while os.listdir("1") != [] :
     os.chdir("..")
 
 print("I will now start to edit the pictures.")
-for item in os.listdir("inbetween") :
-    
+os.chdir("inbetween")
+for item in os.listdir() :
+    subprocess.run(["convert","-size","3840x2160","xc:black",item,"-resize","3840x2160^","-blur","0x25","-gravity","center","-composite",item,"-geometry","3840x2160","-gravity","center","-composite","../inbetween2/"+item])
+os.chdir("..")
+
+print("I will change everything in to a png.")
+os.chdir("inbetween2")
+for item in os.listdir() :
+    if ".jpg" in item :
+        item_with_png = item.replace(".jpg", ".png")
+        subprocess.run(["convert",item,item_with_png])
+
+
+print("I will now start with optimizing the png files.")
+def optimize(image) :
+    subprocess.run(["oxipng","-Z","-s","all",image])
+    shutil.move(image, "../output")
+
+if __name__ == "__main__" :
+    pool = multiprocessing.Pool()
+    for image in os.listdir() :
+        pool.imap_unordered(optimize, args=(image,))
+    pool.close()
+    pool.join()
+# https://stackoverflow.com/questions/20886565/using-multiprocessing-process-with-a-maximum-number-of-simultaneous-processes
+# https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing.pool
+# https://youtu.be/X7vBbelRXn0
+# This helped alot.
+
+print("Files have been processed and ready in the output directory.")
