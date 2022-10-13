@@ -6,6 +6,7 @@ from PIL import Image
 # To get the width and height of a picture in pixels
 import shutil
 # To move files around
+from multiprocessing import Pool
 import multiprocessing
 # To use all the cpu cores available for parallel computing
 
@@ -55,15 +56,17 @@ for item in os.listdir() :
 
 print("I will now start with optimizing the png files.")
 def optimize(image) :
-    subprocess.run(["oxipng","-Z","-s","all",image])
-    #shutil.move(image, "../output")
+    subprocess.run(["oxipng","-Z","-s","safe","-t","2",image])
+    shutil.move(image, "../output")
 
 if __name__ == "__main__" :
-    pool = multiprocessing.Pool(1)
-    for image in os.listdir() :
-        pool.apply_async(optimize, args=image)
-    pool.close()
-    pool.join()
+    with Pool(int(round(multiprocessing.cpu_count()/2))) as pool :
+        for image in os.listdir() :
+            pool.apply_async(optimize, (image,))
+        pool.close()
+        pool.join()
+
+
 # https://stackoverflow.com/questions/20886565/using-multiprocessing-process-with-a-maximum-number-of-simultaneous-processes
 # https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing.pool
 # https://youtu.be/X7vBbelRXn0
