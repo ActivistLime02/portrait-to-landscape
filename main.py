@@ -25,6 +25,7 @@ for item in os.listdir() :
     shutil.move(item, "../inbetween")
 os.chdir("..")
 
+
 print("Preperations are made for upscaling with waifu2x-ncnn-vulkan.")
 while os.listdir("1") != [] :
     subprocess.run(["waifu2x-ncnn-vulkan","-i","1","-o","2"])
@@ -37,13 +38,22 @@ while os.listdir("1") != [] :
         shutil.move(item, "../inbetween")
     os.chdir("..")
 
+
 print("I will now start to edit the pictures.")
 os.chdir("inbetween")
-for item in os.listdir() :
+
+def editing(item) :
     subprocess.run(["convert","-size","3840x2160","xc:black",item,"-resize","3840x2160^","-blur","0x25","-gravity","center","-composite",item,"-geometry","3840x2160","-gravity","center","-composite","../inbetween2/"+item])
-    # remove the item to clean inbetween? Here or a line lower outside of the indent
-    # Maybe optimize with multiprocessing like with the with optimization? Only half of the cpu is enough I think.
+    os.remove(item)
+
+if __name__ == "__main__" :
+    with Pool(int(round(multiprocessing.cpu_count()/4))) as pool :
+        for item in os.listdir() :
+            pool.apply_async(editing, (item,))
+        pool.close()
+        pool.join()
 os.chdir("..")
+
 
 print("I will change everything in to a png.")
 os.chdir("inbetween2")
@@ -70,6 +80,6 @@ if __name__ == "__main__" :
 # https://stackoverflow.com/questions/20886565/using-multiprocessing-process-with-a-maximum-number-of-simultaneous-processes
 # https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing.pool
 # https://youtu.be/X7vBbelRXn0
-# This helped alot.
+# These sources helped alot.
 
 print("Files have been processed and ready in the output directory.")
