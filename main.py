@@ -7,7 +7,7 @@ from PIL import Image
 import shutil
 # To move files around
 from multiprocessing import Pool
-import multiprocessing
+import multiprocessingnames
 # To use all the cpu cores available for parallel computing
 import fnmatch
 # To filter strings
@@ -57,24 +57,22 @@ if __name__ == "__main__" :
 os.chdir("..")
 
 
-print("I will change everything into a png.")
 os.chdir("inbetween2")
-for item in os.listdir() :
-    if ".jpg" in item :
-        item_with_png = item.replace(".jpg", ".png")
-        subprocess.run(["convert",item,item_with_png])
-        os.remove(item)
 
-
-print("I will now start with optimizing the png files.")
+print("I will now start processing files to jxl.")
 def optimize(image) :
     if fnmatch.filter(image, ".???") in image :
         new_image = image-fnmatch.filter(image, ".???")+".jxl"
+    else :
+        print("You have a strange file extension that I dont't understand.")
+        print("I will end the program here.")
+        exit()
     subprocess.run(["cjxl",image,new_image,"-d","0","-e","7"])
     shutil.move(new_image, "../output")
+    os.remove(image)
 
 if __name__ == "__main__" :
-    with Pool(int(round(multiprocessing.cpu_count()/2))) as pool :
+    with Pool((multiprocessing.cpu_count())) as pool :
         for image in os.listdir() :
             pool.apply_async(optimize, (image,))
         pool.close()
