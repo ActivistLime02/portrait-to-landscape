@@ -7,7 +7,7 @@ from PIL import Image
 import shutil
 # To move files around
 from multiprocessing import Pool
-import multiprocessingnames
+import multiprocessing
 # To use all the cpu cores available for parallel computing
 import fnmatch
 # To filter strings
