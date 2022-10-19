@@ -9,6 +9,8 @@ import shutil
 from multiprocessing import Pool
 import multiprocessing
 # To use all the cpu cores available for parallel computing
+import fnmatch
+# To filter strings
 
 # Making a function because it will be used twice and for practice
 def preprocess(to) :
@@ -66,8 +68,10 @@ for item in os.listdir() :
 
 print("I will now start with optimizing the png files.")
 def optimize(image) :
-    subprocess.run(["oxipng","-Z","-s","safe","-t","2",image])
-    shutil.move(image, "../output")
+    if fnmatch.filter(image, ".???") in image :
+        new_image = image-fnmatch.filter(image, ".???")+".jxl"
+    subprocess.run(["cjxl",image,new_image,"-d","0","-e","7"])
+    shutil.move(new_image, "../output")
 
 if __name__ == "__main__" :
     with Pool(int(round(multiprocessing.cpu_count()/2))) as pool :
