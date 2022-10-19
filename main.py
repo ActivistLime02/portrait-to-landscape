@@ -55,7 +55,7 @@ if __name__ == "__main__" :
 os.chdir("..")
 
 
-print("I will change everything in to a png.")
+print("I will change everything into a png.")
 os.chdir("inbetween2")
 for item in os.listdir() :
     if ".jpg" in item :
