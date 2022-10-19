@@ -9,8 +9,8 @@ import shutil
 from multiprocessing import Pool
 import multiprocessing
 # To use all the cpu cores available for parallel computing
-import fnmatch
-# To filter strings
+import time
+# Put a little time between parallel jobs
 
 # Making a function because it will be used twice and for practice
 def preprocess(to) :
@@ -52,6 +52,7 @@ if __name__ == "__main__" :
     with Pool(int(round(multiprocessing.cpu_count()/4))) as pool :
         for item in os.listdir() :
             pool.apply_async(editing, (item,))
+            time.sleep(1)
         pool.close()
         pool.join()
 os.chdir("..")
@@ -61,12 +62,7 @@ os.chdir("inbetween2")
 
 print("I will now start processing files to jxl.")
 def optimize(image) :
-    if fnmatch.filter(image, ".???") in image :
-        new_image = image-fnmatch.filter(image, ".???")+".jxl"
-    else :
-        print("You have a strange file extension that I dont't understand.")
-        print("I will end the program here.")
-        exit()
+    new_image = image[:-4] + ".jxl"
     subprocess.run(["cjxl",image,new_image,"-d","0","-e","7"])
     shutil.move(new_image, "../output")
     os.remove(image)
@@ -75,6 +71,7 @@ if __name__ == "__main__" :
     with Pool((multiprocessing.cpu_count())) as pool :
         for image in os.listdir() :
             pool.apply_async(optimize, (image,))
+            time.sleep(1)
         pool.close()
         pool.join()
 
