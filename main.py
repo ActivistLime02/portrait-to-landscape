@@ -9,8 +9,6 @@ import shutil
 from multiprocessing import Pool
 import multiprocessing
 # To use all the cpu cores available for parallel computing
-import time
-# Put a little time between parallel jobs
 
 # Making a function because it will be used twice and for practice
 def preprocess(to) :
@@ -63,7 +61,6 @@ if __name__ == "__main__" :
     with Pool((multiprocessing.cpu_count())) as pool :
         for image in os.listdir() :
             pool.apply_async(optimize, (image,))
-            time.sleep(1)
         pool.close()
         pool.join()
 
