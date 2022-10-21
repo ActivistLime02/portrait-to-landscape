@@ -44,17 +44,9 @@ while os.listdir("1") != [] :
 print("I will now start to edit the pictures.")
 os.chdir("inbetween")
 
-def editing(item) :
+for item in os.listdir() :
     subprocess.run(["convert","-size","3840x2160","xc:black",item,"-resize","3840x2160^","-blur","0x25","-gravity","center","-composite",item,"-geometry","3840x2160","-gravity","center","-composite","../inbetween2/"+item])
     os.remove(item)
-
-if __name__ == "__main__" :
-    with Pool(int(round(multiprocessing.cpu_count()/4))) as pool :
-        for item in os.listdir() :
-            pool.apply_async(editing, (item,))
-            time.sleep(1)
-        pool.close()
-        pool.join()
 os.chdir("..")
 
 
