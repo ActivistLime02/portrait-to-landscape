@@ -28,7 +28,7 @@ os.chdir("..")
 
 print("Preperations are made for upscaling with waifu2x-ncnn-vulkan.")
 while os.listdir("1") != [] :
-    subprocess.run(["waifu2x-ncnn-vulkan","-i","1","-o","2"])
+    subprocess.run(["waifu2x-ncnn-vulkan","-i","1","-o","2","-f","png"])
     os.chdir("1")
     for item in os.listdir() :
         os.remove(item)
@@ -43,7 +43,7 @@ print("I will now start to edit the pictures.")
 os.chdir("inbetween")
 
 for item in os.listdir() :
-    subprocess.run(["convert","-size","3840x2160","xc:black",item,"-resize","3840x2160^","-blur","0x25","-gravity","center","-composite",item,"-geometry","3840x2160","-gravity","center","-composite","../inbetween2/"+item])
+    subprocess.run(["convert","-size","3840x2160","xc:black",item,"-resize","3840x2160^","-blur","0x25","-gravity","center","-composite",item,"-geometry","3840x2160","-gravity","center","-composite","../inbetween2/" + item[:-4] + ".png"])
     os.remove(item)
 os.chdir("..")
 
@@ -53,12 +53,12 @@ os.chdir("inbetween2")
 print("I will now start processing files to jxl.")
 def optimize(image) :
     new_image = image[:-4] + ".jxl"
-    subprocess.run(["cjxl",image,new_image,"-d","0","-e","7"])
+    subprocess.run(["cjxl",image,new_image,"-d","0","-e","8"])
     shutil.move(new_image, "../output")
     os.remove(image)
 
 if __name__ == "__main__" :
-    with Pool((multiprocessing.cpu_count())) as pool :
+    with Pool(round(multiprocessing.cpu_count()/2)) as pool :
         for image in os.listdir() :
             pool.apply_async(optimize, (image,))
         pool.close()
