@@ -58,7 +58,7 @@ def optimize(image) :
     os.remove(image)
 
 if __name__ == "__main__" :
-    with Pool(round(multiprocessing.cpu_count()/2)) as pool :
+    with Pool(round(multiprocessing.cpu_count()//4*3)) as pool :
         for image in os.listdir() :
             pool.apply_async(optimize, (image,))
         pool.close()
