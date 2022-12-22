@@ -7,9 +7,10 @@ Firstly, use prepare-folders.py to create a couple of folders that the main scri
 ```
 python prepare-folders.py
 ```
-Then, place your images in the input directory. And specify the resolution with -x and -y arguments. -x for the horizontal pixels and -y for the vertical pixels. The images in this directory will get deleted. If you need to keep the original pictures then please back it up in another directory that isn't made by the script. Run the script if you are ready.
+Then, place your images in the input directory. And specify the resolution with -x and -y arguments. -x for the horizontal pixels and -y for the vertical pixels. Specify the image format with -f, the options are png and jxl.
+The images in the input directory will get deleted. If you need to keep the original pictures then please back it up in another directory that isn't made by the script. Run the script if you are ready.
 ```
-python main.py -x 3640 -y 2160 # For 4K
+python main.py -f jxl -x 3640 -y 2160 # For 4K image with jxl as file format
 ```
 The processed images will be in the output folder.
 ## Dependencies

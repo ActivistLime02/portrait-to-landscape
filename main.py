@@ -12,14 +12,18 @@ import multiprocessing
 # Parse arguments
 import argparse
 
+
 # Parse aguments for later use
 parser = argparse.ArgumentParser(description="Python script for editing pictures to a specific resolution by adding blur to the sides.")
 parser.add_argument("-x", "--width", required=True, type=int, dest="cmd_width")
 parser.add_argument("-y", "--height", required=True, type=int, dest="cmd_height")
+parser.add_argument("-f", "--file_format", choices=["png", "jxl"], required=True, type=str, dest="file_format")
 args = parser.parse_args()
 
 cmd_width = args.cmd_width
 cmd_height = args.cmd_height
+file_format = args.file_format
+
 
 # Making a function because it will be used twice and for practice
 def preprocess(to) :
@@ -66,24 +70,26 @@ os.chdir("..")
 
 os.chdir("inbetween2")
 
-print("I will now start processing files to jxl.")
-def optimize(image) :
-    new_image = image[:-4] + ".jxl"
-    subprocess.run(["cjxl",image,new_image,"-d","0","-e","8"])
-    shutil.move(new_image, "../output")
-    os.remove(image)
+if file_format == "jxl" :
+    print("I will now start processing files to jxl.")
+    def optimize(image) :
+        new_image = image[:-4] + ".jxl"
+        subprocess.run(["cjxl",image,new_image,"-d","0","-e","8"])
+        shutil.move(new_image, "../output")
+        os.remove(image)
 
-if __name__ == "__main__" :
-    with Pool(round(multiprocessing.cpu_count()//4*3)) as pool :
-        for image in os.listdir() :
-            pool.apply_async(optimize, (image,))
-        pool.close()
-        pool.join()
+    if __name__ == "__main__" :
+        with Pool(round(multiprocessing.cpu_count()//4*3)) as pool :
+            for image in os.listdir() :
+                pool.apply_async(optimize, (image,))
+            pool.close()
+            pool.join()
+elif file_format == "png" :
+    print("I will now start optimizing the png pictures")
+    def optimize(image) :
+        subprocess.run(["oxipng","-Z","-s","safe","-t","2",image])
+        shutil.move(image, "../output")
+        os.remove(image)
 
-
-# https://stackoverflow.com/questions/20886565/using-multiprocessing-process-with-a-maximum-number-of-simultaneous-processes
-# https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing.pool
-# https://youtu.be/X7vBbelRXn0
-# These sources helped alot.
 
 print("Files have been processed and ready in the output directory.")
