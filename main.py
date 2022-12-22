@@ -11,6 +11,8 @@ from multiprocessing import Pool
 import multiprocessing
 # Parse arguments
 import argparse
+# Round upwards
+import math
 
 
 # Parse aguments for later use
@@ -84,12 +86,27 @@ if file_format == "jxl" :
                 pool.apply_async(optimize, (image,))
             pool.close()
             pool.join()
+
 elif file_format == "png" :
     print("I will now start optimizing the png pictures")
     def optimize(image) :
-        subprocess.run(["oxipng","-Z","-s","safe","-t","2",image])
+        subprocess.run(["oxipng","-o","5","-s","safe",image])
         shutil.move(image, "../output")
-        os.remove(image)
+        # Copy paste from jxl so I don't think os.remove is needed now, will remove later
+        #os.remove(image)
 
-
+    if __name__ == "__main__" :
+        if multiprocessing.cpu_count() <= 8 :
+            with Pool(1) as pool :
+                for image in os.listdir() :
+                    pool.apply_async(optimize, (image,))
+                pool.close()
+                pool.join()
+        else :
+            number_of_threads = int(math.ceil(multiprocessing.cpu_count()/8))
+            with Pool(number_of_threads) as pool :
+                for image in os.listdir() :
+                    pool.apply_async(optimize, (image,))
+                pool.close()
+                pool.join()
 print("Files have been processed and ready in the output directory.")
