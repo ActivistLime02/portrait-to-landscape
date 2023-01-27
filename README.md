@@ -7,7 +7,7 @@ Firstly, use prepare-folders.py to create a couple of folders that the main scri
 ```
 python prepare-folders.py
 ```
-Then, place your images in the input directory. And specify the resolution with -x and -y arguments. -x for the horizontal pixels and -y for the vertical pixels. Specify the image format with -f, the options are png and jxl.
+Then, place your images in the input directory. And specify the resolution with -x and -y arguments. -x for the horizontal pixels and -y for the vertical pixels. Specify the image format with -f, the options are png or jxl.
 The images in the input directory will get deleted. If you need to keep the original pictures then please back it up in another directory that isn't made by the script. Run the script if you are ready.
 ```
 python main.py -f jxl -x 3640 -y 2160 # For 4K image with jxl as file format
@@ -20,4 +20,4 @@ The processed images will be in the output folder.
 - `oxipng`
 - `libjxl` (for cjxl)
 ## Caviats
-The script is made with usage on Linux in mind. Theorretically this should work in any other OS's as long as the dependencies are in your PATH.
+The script is made with usage on Linux in mind. Theoretically this should work in any other OS as long as the dependencies are in your PATH.
