@@ -2,8 +2,8 @@
 import os
 # Run terminal commands
 import subprocess
-# To get the width and height of a picture in pixels
-from PIL import Image
+# To get the width and height of a picture in pixels  !!!Will be replaced with wand
+#from PIL import Image
 # To move files around
 import shutil
 # To use all the cpu cores available for parallel computing
@@ -13,7 +13,10 @@ import multiprocessing
 import argparse
 # Round upwards
 import math
-
+# pyoxipng, some linux distributions don't include oxipng in the standard repo. (debian 11 for example)
+import oxipng
+# Wand, binding for imagemagick
+from wand.image import Image
 
 # Parse aguments for later use
 parser = argparse.ArgumentParser(description="Python script for editing pictures to a specific resolution by adding blur to the sides.")
@@ -29,9 +32,10 @@ file_format = args.file_format
 
 # Making a function because it will be used twice and for practice
 def preprocess(to) :
-    for item in os.listdir() :
-        img = Image.open(item)
-        width,height = img.size
+    for item in os.listdir() :        
+        with Image(filename=item) as img :
+            width = img.width
+            height = img.height
         if height < cmd_height and width < cmd_width :
             shutil.move(item, to)
 
