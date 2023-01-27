@@ -92,8 +92,6 @@ elif file_format == "png" :
     def optimize(image) :
         subprocess.run(["oxipng","-o","5","-s","safe",image])
         shutil.move(image, "../output")
-        # Copy paste from jxl so I don't think os.remove is needed now, will remove later
-        #os.remove(image)
 
     if __name__ == "__main__" :
         if multiprocessing.cpu_count() <= 8 :
