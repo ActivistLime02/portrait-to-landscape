@@ -17,7 +17,8 @@ import math
 import oxipng
 # Wand, binding for imagemagick
 from wand.image import Image
-
+# measure time it takes to complete the script
+import time
 
 # Parse aguments for later use
 parser = argparse.ArgumentParser(description="Python script for editing pictures to a specific resolution by adding blur to the sides.")
@@ -47,7 +48,7 @@ for item in os.listdir() :
     shutil.move(item, "../inbetween")
 os.chdir("..")
 
-
+upscaling_time_start = time.time()
 print("Preperations are made for upscaling with waifu2x-ncnn-vulkan.")
 while os.listdir("1") != [] :
     subprocess.run(["waifu2x-ncnn-vulkan","-i","1","-o","2","-f","png"])
@@ -59,8 +60,9 @@ while os.listdir("1") != [] :
     for item in os.listdir() :
         shutil.move(item, "../inbetween")
     os.chdir("..")
+upscaling_time_end = time.time()
 
-
+editing_time_start = time.time()
 print("I will now start to edit the pictures.")
 os.chdir("inbetween")
 
@@ -82,8 +84,9 @@ for item in os.listdir() :
         new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
     os.remove(item)
 os.chdir("..")
+editing_time_end = time.time()
 
-
+optimizing_time_start = time.time()
 os.chdir("inbetween2")
 
 if file_format == "jxl" :
@@ -122,4 +125,17 @@ elif file_format == "png" :
                     pool.apply_async(optimize, (image,))
                 pool.close()
                 pool.join()
+optimizing_time_end = time.time()
+
+upscaling_time = upscaling_time_end - upscaling_time_start
+editing_time = editing_time_end - editing_time_start
+optimizing_time = optimizing_time_end - optimizing_time_start
+overall_time = optimizing_time_end - upscaling_time_start
+
+print()
 print("Files have been processed and ready in the output directory.")
+print()
+print("This scipt took", overall_time, "seconds to compleet.")
+print("Upscaling took", upscaling_time, "seconds to compleet.")
+print("Editing took", editing_time, "seconds to compleet.")
+print("Lossless compression took", optimizing_time, "seconds to compleet.")
