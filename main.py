@@ -17,6 +17,7 @@ import math
 import oxipng
 # Wand, binding for imagemagick
 from wand.image import Image
+from wand.color import Color
 # measure time it takes to complete the script
 import time
 
@@ -73,15 +74,108 @@ str_cmd_height = str(cmd_height)
 for item in os.listdir() :
     #subprocess.run(["convert","-size","3840x2160","xc:black",item,"-resize","3840x2160^","-blur","0x25","-gravity","center","-composite",item,"-geometry","3840x2160","-gravity","center","-composite","../inbetween2/" + item[:-4] + ".png"])
     #subprocess.run(["convert","-size",cmd_width+"x"+cmd_height,"xc:black",item,"-resize",cmd_width+"x"+cmd_height+"^","-blur","0x25","-gravity","center","-composite",item,"-geometry",cmd_width+"x"+cmd_height,"-gravity","center","-composite","../inbetween2/" + item[:-4] + ".png"])
-    with Image(width=cmd_width, height=cmd_height, pseudo="xc:black") as new_image :
-        with Image(filename=item) as blur_img :
-            blur_img.transform(resize=str_cmd_width + "x" + str_cmd_height + "^")
-            blur_img.blur(radius=0,sigma=25)
-            new_image.composite(blur_img, gravity="center")
-        with Image(filename=item) as main_img :
-            main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
-            new_image.composite(main_img, gravity="center")
-        new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+    with Image(filename=item) as test :
+        # Test if image has any transparency     
+        transparency = False
+        list_with_pixel_data = set(test.export_pixels(channel_map="A", storage="char"))
+        for number in list_with_pixel_data :
+            if number != 255 :
+                transparency = True
+        # Test if the image has any sides with the same color
+        width = test.width
+        height = test.height
+        # north
+        can_i_extend_north = False
+        pixels_north = test.export_pixels(x=0, y=0, width=width, height=1, channel_map="RGB", storage="char")
+        pixels_north_set = list(zip(*[iter(pixels_north)]*3))
+        if len(set(pixels_north_set)) == 1 :
+            can_i_extend_north = True
+        # east
+        can_i_extend_east = False
+        pixels_east = test.export_pixels(x=width, y=0, width=1, height=height, channel_map="RGB", storage="char")
+        pixels_east_set = list(zip(*[iter(pixels_east)]*3))
+        if len(set(pixels_east_set)) == 1 :
+            can_i_extend_east = True
+        # south
+        can_i_extend_south = False
+        pixels_south = test.export_pixels(x=0, y=height, width=width, height=1, channel_map="RGB", storage="char")
+        pixels_south_set = list(zip(*[iter(pixels_south)]*3))
+        if len(set(pixels_south_set)) == 1 :
+            can_i_extend_south = True
+        # west
+        can_i_extend_west = False
+        pixels_west = test.export_pixels(x=0, y=0, width=1, height=height, channel_map="RGB", storage="char")
+        pixels_west_set = list(zip(*[iter(pixels_west)]*3))
+        if len(set(pixels_west_set)) == 1 :
+            can_i_extend_west = True
+        # north and south
+        can_i_extend_north_south = False
+        pixels_north_south_set = pixels_north_set + pixels_south_set
+        if len(set(pixels_north_south_set)) == 1 :
+            can_i_extend_north_south = True
+        # west and east
+        can_i_extend_west_east = False
+        pixels_west_east_set = pixels_west_set + pixels_east_set
+        if len(set(pixels_west_east_set)) == 1 :
+            can_i_extend_west_east = True
+    
+    if transparency == True :
+        with Image(width=cmd_width, height=cmd_height, pseudo="xc:black") as new_image :
+            with Image(filename=item) as main_img :
+                main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
+                new_image.composite(main_img, gravity="center")
+            new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+    
+    elif cmd_width / cmd_height >= 1 and can_i_extend_west_east == True and transparency == False :
+        color = pixels_west_east_set[0]
+        string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
+        with Color(string_color) as backgroud :
+            with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image :
+                with Image(filename=item) as main_img :
+                    main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
+                    new_image.composite(main_img, gravity="center")
+                new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+    
+    elif cmd_width / cmd_height < 1 and can_i_extend_north_south == True and transparency == False :
+        color = pixels_north_south_set[0]
+        string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
+        with Color(string_color) as backgroud :
+            with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image :
+                with Image(filename=item) as main_img :
+                    main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
+                    new_image.composite(main_img, gravity="center")
+                new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+
+    elif cmd_width / cmd_height < 1 and can_i_extend_north_south == False and can_i_extend_north == True and transparency == False :
+        color = pixels_north_set[0]
+        string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
+        with Color(string_color) as backgroud :
+            with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image :
+                with Image(filename=item) as main_img :
+                    main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
+                    new_image.composite(main_img, gravity="south")
+                new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+
+    else :
+        with Image(width=cmd_width, height=cmd_height) as new_image :
+            with Image(filename=item) as blur_img :
+                blur_img.transform(resize=str_cmd_width + "x" + str_cmd_height + "^")
+                blur_img.blur(radius=0,sigma=25)
+                new_image.composite(blur_img, gravity="center")
+            with Image(filename=item) as main_img :
+                main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
+                new_image.composite(main_img, gravity="center")
+            new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+    #with Image(width=cmd_width, height=cmd_height, pseudo="xc:black") as new_image :
+    #    if transparency == False :
+    #        with Image(filename=item) as blur_img :
+    #            blur_img.transform(resize=str_cmd_width + "x" + str_cmd_height + "^")
+    #            blur_img.blur(radius=0,sigma=25)
+    #            new_image.composite(blur_img, gravity="center")
+    #    with Image(filename=item) as main_img :
+    #        main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
+    #        new_image.composite(main_img, gravity="center")
+    #    new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
     os.remove(item)
 os.chdir("..")
 editing_time_end = time.time()
