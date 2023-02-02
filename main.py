@@ -79,7 +79,7 @@ for item in os.listdir() :
         transparency = False
         list_with_pixel_data = set(test.export_pixels(channel_map="A", storage="char"))
         for number in list_with_pixel_data :
-            if number != 255 :
+            if number == 0 :
                 transparency = True
         # Test if the image has any sides with the same color
         width = test.width
