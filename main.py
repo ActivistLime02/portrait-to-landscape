@@ -20,6 +20,8 @@ from wand.image import Image
 from wand.color import Color
 # measure time it takes to complete the script
 import time
+# Get most frequent thing from a list
+from collections import Counter
 
 # Parse aguments for later use
 parser = argparse.ArgumentParser(description="Python script for editing pictures to a specific resolution by adding blur to the sides.")
@@ -71,52 +73,71 @@ os.chdir("inbetween")
 str_cmd_width = str(cmd_width)
 str_cmd_height = str(cmd_height)
 
+def most_frequent_element_in_percent(list) :
+    frequency = Counter(list)
+    most_frequent_element = frequency.most_common(1)[0][0]
+    count = 0
+    for element in list :
+        if element == most_frequent_element :
+            count += 1
+    percent = count / len(list) * 100
+    return percent
+
 for item in os.listdir() :
-    #subprocess.run(["convert","-size","3840x2160","xc:black",item,"-resize","3840x2160^","-blur","0x25","-gravity","center","-composite",item,"-geometry","3840x2160","-gravity","center","-composite","../inbetween2/" + item[:-4] + ".png"])
-    #subprocess.run(["convert","-size",cmd_width+"x"+cmd_height,"xc:black",item,"-resize",cmd_width+"x"+cmd_height+"^","-blur","0x25","-gravity","center","-composite",item,"-geometry",cmd_width+"x"+cmd_height,"-gravity","center","-composite","../inbetween2/" + item[:-4] + ".png"])
     with Image(filename=item) as test :
-        # Test if image has any transparency     
+        # Test if image has any transparency
         transparency = False
-        list_with_pixel_data = set(test.export_pixels(channel_map="A", storage="char"))
+        list_with_pixel_data = test.export_pixels(channel_map="A", storage="char")
+        total_count = len(list_with_pixel_data)
+        zero_count = 0
         for number in list_with_pixel_data :
             if number == 0 :
-                transparency = True
+                zero_count += 1
+        percentage = round(zero_count / total_count * 100, 2)
+        if percentage >= 5 :
+            transparency = True
         # Test if the image has any sides with the same color
         width = test.width
         height = test.height
         # north
         can_i_extend_north = False
         pixels_north = test.export_pixels(x=0, y=0, width=width, height=1, channel_map="RGB", storage="char")
-        pixels_north_set = list(zip(*[iter(pixels_north)]*3))
-        if len(set(pixels_north_set)) == 1 :
+        pixels_north_list = list(zip(*[iter(pixels_north)]*3))
+        percentage = most_frequent_element_in_percent(pixels_north_list)
+        if percentage >= 98 :
             can_i_extend_north = True
         # east
         can_i_extend_east = False
         pixels_east = test.export_pixels(x=width, y=0, width=1, height=height, channel_map="RGB", storage="char")
-        pixels_east_set = list(zip(*[iter(pixels_east)]*3))
-        if len(set(pixels_east_set)) == 1 :
+        pixels_east_list = list(zip(*[iter(pixels_east)]*3))
+        percentage = most_frequent_element_in_percent(pixels_east_list)
+        if percentage >= 98 :
             can_i_extend_east = True
         # south
         can_i_extend_south = False
         pixels_south = test.export_pixels(x=0, y=height, width=width, height=1, channel_map="RGB", storage="char")
-        pixels_south_set = list(zip(*[iter(pixels_south)]*3))
-        if len(set(pixels_south_set)) == 1 :
+        pixels_south_list = list(zip(*[iter(pixels_south)]*3))
+        percentage = most_frequent_element_in_percent(pixels_south_list)
+        if percentage >= 98 :
             can_i_extend_south = True
         # west
         can_i_extend_west = False
         pixels_west = test.export_pixels(x=0, y=0, width=1, height=height, channel_map="RGB", storage="char")
-        pixels_west_set = list(zip(*[iter(pixels_west)]*3))
-        if len(set(pixels_west_set)) == 1 :
+        pixels_west_list = list(zip(*[iter(pixels_west)]*3))
+        percentage = most_frequent_element_in_percent(pixels_west_list)
+        if percentage >= 98 :
             can_i_extend_west = True
         # north and south
         can_i_extend_north_south = False
-        pixels_north_south_set = pixels_north_set + pixels_south_set
-        if len(set(pixels_north_south_set)) == 1 :
+        pixels_north_south_list = pixels_north_list + pixels_south_list
+        percentage = most_frequent_element_in_percent(pixels_north_south_list)
+        if percentage >= 98 :
             can_i_extend_north_south = True
         # west and east
         can_i_extend_west_east = False
-        pixels_west_east_set = pixels_west_set + pixels_east_set
-        if len(set(pixels_west_east_set)) == 1 :
+        pixels_west_east_list = pixels_west_list + pixels_east_list
+        percentage = most_frequent_element_in_percent(pixels_west_east_list)
+        if percentage >= 98 :
             can_i_extend_west_east = True
     
     if transparency == True :
@@ -124,10 +145,9 @@ for item in os.listdir() :
             with Image(filename=item) as main_img :
                 main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
                 new_image.composite(main_img, gravity="center")
-            new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
-    
+            new_image.save(filename="../inbetween2/" + item[:-4] + ".png")    
     elif cmd_width / cmd_height >= 1 and can_i_extend_west_east == True and transparency == False :
-        color = pixels_west_east_set[0]
+        color = pixels_west_east_list[0]
         string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
         with Color(string_color) as backgroud :
             with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image :
@@ -135,9 +155,8 @@ for item in os.listdir() :
                     main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
                     new_image.composite(main_img, gravity="center")
                 new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
-    
     elif cmd_width / cmd_height < 1 and can_i_extend_north_south == True and transparency == False :
-        color = pixels_north_south_set[0]
+        color = pixels_north_south_list[0]
         string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
         with Color(string_color) as backgroud :
             with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image :
@@ -145,17 +164,6 @@ for item in os.listdir() :
                     main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
                     new_image.composite(main_img, gravity="center")
                 new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
-
-    elif cmd_width / cmd_height < 1 and can_i_extend_north_south == False and can_i_extend_north == True and transparency == False :
-        color = pixels_north_set[0]
-        string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
-        with Color(string_color) as backgroud :
-            with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image :
-                with Image(filename=item) as main_img :
-                    main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
-                    new_image.composite(main_img, gravity="south")
-                new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
-
     else :
         with Image(width=cmd_width, height=cmd_height) as new_image :
             with Image(filename=item) as blur_img :
@@ -166,16 +174,6 @@ for item in os.listdir() :
                 main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
                 new_image.composite(main_img, gravity="center")
             new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
-    #with Image(width=cmd_width, height=cmd_height, pseudo="xc:black") as new_image :
-    #    if transparency == False :
-    #        with Image(filename=item) as blur_img :
-    #            blur_img.transform(resize=str_cmd_width + "x" + str_cmd_height + "^")
-    #            blur_img.blur(radius=0,sigma=25)
-    #            new_image.composite(blur_img, gravity="center")
-    #    with Image(filename=item) as main_img :
-    #        main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
-    #        new_image.composite(main_img, gravity="center")
-    #    new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
     os.remove(item)
 os.chdir("..")
 editing_time_end = time.time()
