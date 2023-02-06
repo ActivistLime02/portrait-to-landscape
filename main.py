@@ -2,8 +2,6 @@
 import os
 # Run terminal commands
 import subprocess
-# To get the width and height of a picture in pixels  !!!Will be replaced with wand
-#from PIL import Image
 # To move files around
 import shutil
 # To use all the cpu cores available for parallel computing
@@ -199,7 +197,6 @@ if file_format == "jxl" :
 elif file_format == "png" :
     print("I will now start optimizing the png pictures")
     def optimize(image) :
-        #subprocess.run(["oxipng","-o","5","-s","safe",image])
         oxipng.optimize(image, level=5, strip=oxipng.Headers.safe())
         shutil.move(image, "../output")
 
