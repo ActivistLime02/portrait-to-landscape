@@ -1,5 +1,4 @@
-# Portrait to landscape python
-This is a rewriten version of my bash script doing the same thing but a little more optimized.
+# Portrait to landscape
 ## What does it do?
 This program takes a picture of any aspect ratio and change it to a custom resolution. Since this will use [waifu2x-ncnn-vulkan](https://github.com/nihui/waifu2x-ncnn-vulkan) it is recommended to use anime/manga styled images.
 ## How to use
