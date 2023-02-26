@@ -81,6 +81,11 @@ def most_frequent_element_in_percent(list) :
     percent = count / len(list) * 100
     return percent
 
+def most_frequent_color(list) :
+    frequency = Counter(list)
+    most_frequent_color = frequency.most_common(1)[0][0]
+    return most_frequent_color
+
 for item in os.listdir() :
     with Image(filename=item) as test :
         # Test if image has any transparency
@@ -99,43 +104,43 @@ for item in os.listdir() :
         height = test.height
         # north
         can_i_extend_north = False
-        pixels_north = test.export_pixels(x=0, y=0, width=width, height=1, channel_map="RGB", storage="char")
+        pixels_north = test.export_pixels(x=0, y=0, width=width, height=5, channel_map="RGB", storage="char")
         pixels_north_list = list(zip(*[iter(pixels_north)]*3))
         percentage = most_frequent_element_in_percent(pixels_north_list)
-        if percentage >= 98 :
+        if percentage >= 80 :
             can_i_extend_north = True
         # east
         can_i_extend_east = False
-        pixels_east = test.export_pixels(x=width, y=0, width=1, height=height, channel_map="RGB", storage="char")
+        pixels_east = test.export_pixels(x=width, y=0, width=5, height=height, channel_map="RGB", storage="char")
         pixels_east_list = list(zip(*[iter(pixels_east)]*3))
         percentage = most_frequent_element_in_percent(pixels_east_list)
-        if percentage >= 98 :
+        if percentage >= 80 :
             can_i_extend_east = True
         # south
         can_i_extend_south = False
-        pixels_south = test.export_pixels(x=0, y=height, width=width, height=1, channel_map="RGB", storage="char")
+        pixels_south = test.export_pixels(x=0, y=height, width=width, height=5, channel_map="RGB", storage="char")
         pixels_south_list = list(zip(*[iter(pixels_south)]*3))
         percentage = most_frequent_element_in_percent(pixels_south_list)
-        if percentage >= 98 :
+        if percentage >= 80 :
             can_i_extend_south = True
         # west
         can_i_extend_west = False
-        pixels_west = test.export_pixels(x=0, y=0, width=1, height=height, channel_map="RGB", storage="char")
+        pixels_west = test.export_pixels(x=0, y=0, width=5, height=height, channel_map="RGB", storage="char")
         pixels_west_list = list(zip(*[iter(pixels_west)]*3))
         percentage = most_frequent_element_in_percent(pixels_west_list)
-        if percentage >= 98 :
+        if percentage >= 80 :
             can_i_extend_west = True
         # north and south
         can_i_extend_north_south = False
         pixels_north_south_list = pixels_north_list + pixels_south_list
         percentage = most_frequent_element_in_percent(pixels_north_south_list)
-        if percentage >= 98 :
+        if percentage >= 80 :
             can_i_extend_north_south = True
         # west and east
         can_i_extend_west_east = False
         pixels_west_east_list = pixels_west_list + pixels_east_list
         percentage = most_frequent_element_in_percent(pixels_west_east_list)
-        if percentage >= 98 :
+        if percentage >= 80 :
             can_i_extend_west_east = True
     
     if transparency == True :
@@ -145,7 +150,7 @@ for item in os.listdir() :
                 new_image.composite(main_img, gravity="center")
             new_image.save(filename="../inbetween2/" + item[:-4] + ".png")    
     elif cmd_width / cmd_height >= 1 and can_i_extend_west_east == True and transparency == False :
-        color = pixels_west_east_list[0]
+        color = most_frequent_color(pixels_west_east_list)
         string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
         with Color(string_color) as backgroud :
             with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image :
@@ -154,7 +159,7 @@ for item in os.listdir() :
                     new_image.composite(main_img, gravity="center")
                 new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
     elif cmd_width / cmd_height < 1 and can_i_extend_north_south == True and transparency == False :
-        color = pixels_north_south_list[0]
+        color = most_frequent_color(pixels_north_south_list)
         string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
         with Color(string_color) as backgroud :
             with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image :
