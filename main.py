@@ -100,6 +100,7 @@ for item in os.listdir() :
         if percentage >= 5 :
             transparency = True
         # Test if the image has any sides with the same color
+        # Convert test.width to width as this is shorter same for height
         width = test.width
         height = test.height
         # north
