@@ -6,7 +6,7 @@ This program takes a picture of any aspect ratio and change it to a custom resol
 Firstly, you will need to download this repository.
 ```
 git clone https://github.com/ActivistLime02/portrait-to-landscape.git
-mv portrait-to-landscape
+cd portrait-to-landscape
 ```
 I recommend you to make a virtual environment for this script. This make sure that any packages that will be installed via pip will not interfere with other programs installed on your computer.
 The below command wil create a virtual environment called env. I will also assume that you will be using bash. If you use fish for example you need to append `.fish` after `env/bin/activate`.
@@ -27,7 +27,7 @@ python prepare-folders.py
 Then, place your images in the `input` directory. Specify the resolution with -x and -y arguments. -x for the horizontal pixels and -y for the vertical pixels. Specify the image format with -f, the options are png or jxl.
 The images in the input directory will get deleted. If you need to keep the original pictures then please back it up in another directory that isn't made by the script. Run the script if you are ready.
 ```
-python main.py -f jxl -x 3640 -y 2160 # For 4K image with jxl as file format
+python main.py -f png -x 3840 -y 2160 # For 4K image with png as file format
 ```
 The processed images will be in the output folder.
 ## Dependencies
