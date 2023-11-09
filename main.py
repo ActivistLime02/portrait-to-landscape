@@ -21,6 +21,10 @@ import time
 # Get most frequent thing from a list
 from collections import Counter
 
+# This script will consume a lot of resources
+# Therefore I will set a high nice level
+os.nice(20)
+
 # Parse aguments for later use
 parser = argparse.ArgumentParser(description="Python script for editing pictures to a specific resolution by adding blur to the sides.")
 parser.add_argument("-x", "--width", required=True, type=int, dest="cmd_width")
@@ -34,18 +38,22 @@ file_format = args.file_format
 
 
 # Making a function because it will be used twice and for practice
-def preprocess(to):
-    for item in os.listdir():
-        with Image(filename=item) as img:
-            width = img.width
-            height = img.height
-        if height < cmd_height and width < cmd_width:
-            shutil.move(item, to)
+def preprocess(to, image):
+    with Image(filename=image) as img:
+        width = img.width
+        height = img.height
+    if height < cmd_height and width < cmd_width:
+        shutil.move(image, to)
 
 
 print("Starting the script.")
 os.chdir("input")
-preprocess("../1")
+if __name__ == "__main__":
+    with Pool() as pool:
+        for image in os.listdir():
+            pool.apply_async(preprocess, ("../1", image,))
+        pool.close()
+        pool.join()
 for item in os.listdir():
     shutil.move(item, "../inbetween")
 os.chdir("..")
@@ -58,7 +66,12 @@ while os.listdir("1") != []:
     for item in os.listdir():
         os.remove(item)
     os.chdir("../2")
-    preprocess("../1")
+    if __name__ == "__main__":
+        with Pool() as pool:
+            for image in os.listdir():
+                pool.apply_async(preprocess, ("../1", image,))
+            pool.close()
+            pool.join()
     for item in os.listdir():
         shutil.move(item, "../inbetween")
     os.chdir("..")
@@ -89,9 +102,8 @@ def most_frequent_color(list):
     most_frequent_color = frequency.most_common(1)[0][0]
     return most_frequent_color
 
-
-for item in os.listdir():
-    with Image(filename=item) as test:
+def image_editing(image):
+    with Image(filename=image) as test:
         # Test if image has any transparency
         transparency = False
         list_with_pixel_data = test.export_pixels(channel_map="A", storage="char")
@@ -147,42 +159,49 @@ for item in os.listdir():
         percentage = most_frequent_element_in_percent(pixels_west_east_list)
         if percentage >= 80:
             can_i_extend_west_east = True
-
     if transparency is True:
         with Image(width=cmd_width, height=cmd_height, pseudo="xc:black") as new_image:
-            with Image(filename=item) as main_img:
+            with Image(filename=image) as main_img:
                 main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
                 new_image.composite(main_img, gravity="center")
-            new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+            new_image.save(filename="../inbetween2/" + image[:-4] + ".png")
     elif cmd_width / cmd_height >= 1 and can_i_extend_west_east is True and transparency is False:
         color = most_frequent_color(pixels_west_east_list)
         string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
         with Color(string_color) as backgroud:
             with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image:
-                with Image(filename=item) as main_img:
+                with Image(filename=image) as main_img:
                     main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
                     new_image.composite(main_img, gravity="center")
-                new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+                new_image.save(filename="../inbetween2/" + image[:-4] + ".png")
     elif cmd_width / cmd_height < 1 and can_i_extend_north_south is True and transparency is False:
         color = most_frequent_color(pixels_north_south_list)
         string_color = "rgb(" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + ")"
         with Color(string_color) as backgroud:
             with Image(width=cmd_width, height=cmd_height, background=backgroud) as new_image:
-                with Image(filename=item) as main_img:
+                with Image(filename=image) as main_img:
                     main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
                     new_image.composite(main_img, gravity="center")
-                new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
+                new_image.save(filename="../inbetween2/" + image[:-4] + ".png")
     else:
         with Image(width=cmd_width, height=cmd_height) as new_image:
-            with Image(filename=item) as blur_img:
+            with Image(filename=image) as blur_img:
                 blur_img.transform(resize=str_cmd_width + "x" + str_cmd_height + "^")
                 blur_img.blur(radius=0, sigma=25)
                 new_image.composite(blur_img, gravity="center")
-            with Image(filename=item) as main_img:
+            with Image(filename=image) as main_img:
                 main_img.transform(resize=str_cmd_width + "x" + str_cmd_height)
                 new_image.composite(main_img, gravity="center")
-            new_image.save(filename="../inbetween2/" + item[:-4] + ".png")
-    os.remove(item)
+            new_image.save(filename="../inbetween2/" + image[:-4] + ".png")
+    os.remove(image)
+
+if __name__ == "__main__":
+    with Pool() as pool:
+        for image in os.listdir():
+            pool.apply_async(image_editing, (image,))
+        pool.close()
+        pool.join()
+
 os.chdir("..")
 editing_time_end = time.time()
 
@@ -199,7 +218,7 @@ if file_format == "jxl":
         os.remove(image)
 
     if __name__ == "__main__":
-        with Pool(round(multiprocessing.cpu_count()//4*3)) as pool:
+        with Pool() as pool:
             for image in os.listdir():
                 pool.apply_async(optimize, (image,))
             pool.close()
@@ -209,23 +228,15 @@ elif file_format == "png":
     print("I will now start optimizing the png pictures")
 
     def optimize(image):
-        oxipng.optimize(image, level=5, strip=oxipng.Headers.safe())
+        oxipng.optimize(image, level=5, strip=oxipng.StripChunks.safe())
         shutil.move(image, "../output")
 
     if __name__ == "__main__":
-        if multiprocessing.cpu_count() <= 8:
-            with Pool(1) as pool:
-                for image in os.listdir():
-                    pool.apply_async(optimize, (image,))
-                pool.close()
-                pool.join()
-        else:
-            number_of_threads = int(math.ceil(multiprocessing.cpu_count()/8))
-            with Pool(number_of_threads) as pool:
-                for image in os.listdir():
-                    pool.apply_async(optimize, (image,))
-                pool.close()
-                pool.join()
+        with Pool() as pool:
+            for image in os.listdir():
+                pool.apply_async(optimize, (image,))
+            pool.close()
+            pool.join()
 optimizing_time_end = time.time()
 
 upscaling_time = upscaling_time_end - upscaling_time_start
