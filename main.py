@@ -16,6 +16,7 @@ import oxipng
 # Wand, binding for imagemagick
 from wand.image import Image
 from wand.color import Color
+from wand.resource import limits
 # measure time it takes to complete the script
 import time
 # Get most frequent thing from a list
@@ -36,6 +37,8 @@ cmd_width = args.cmd_width
 cmd_height = args.cmd_height
 file_format = args.file_format
 
+# Set single thread when editing images
+limits['thread'] = 1
 
 # Making a function because it will be used twice and for practice
 def preprocess(to, image):
@@ -213,7 +216,7 @@ if file_format == "jxl":
 
     def optimize(image):
         new_image = image[:-4] + ".jxl"
-        subprocess.run(["cjxl", image, new_image, "-d", "0", "-e", "8"])
+        subprocess.run(["cjxl", image, new_image, "-d", "0", "-e", "8", "--num_threads=0"])
         shutil.move(new_image, "../output")
         os.remove(image)
 
@@ -232,11 +235,20 @@ elif file_format == "png":
         shutil.move(image, "../output")
 
     if __name__ == "__main__":
-        with Pool() as pool:
-            for image in os.listdir():
-                pool.apply_async(optimize, (image,))
-            pool.close()
-            pool.join()
+        if multiprocessing.cpu_count() <= 8:
+            with Pool(1) as pool:
+                for image in os.listdir():
+                    pool.apply_async(optimize, (image,))
+                pool.close()
+                pool.join()
+        else:
+            number_of_threads = int(math.ceil(multiprocessing.cpu_count()/8))
+            with Pool(number_of_threads) as pool:
+                for image in os.listdir():
+                    pool.apply_async(optimize, (image,))
+                pool.close()
+                pool.join()
+
 optimizing_time_end = time.time()
 
 upscaling_time = upscaling_time_end - upscaling_time_start
