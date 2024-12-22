@@ -1,2 +1,1 @@
-pyoxipng==8.0.0
-Wand==0.6.11
+Wand

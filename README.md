@@ -31,14 +31,12 @@ python main.py -f png -x 3840 -y 2160 # For 4K image with png as file format
 ```
 The processed images will be in the output folder.
 ## Dependencies
-### requirements.txt
-This will be automatically installed when following the how to.
-- `pyoxipng`
-- `Wand`
 ### System
 - `python`
 - `imagemagick`
+- `oxipng`
 - `waifu2x-ncnn-vulkan`
 - `libjxl` (for cjxl)
-## Caviats
-The script is made with usage on Linux in mind. Theoretically this should work in any other OS as long as the dependencies are in your PATH.
+## Warning
+Only tested on Linux, other UNIX like operating systems will probably work.
+I'm pretty sure this will not work on Windows.
