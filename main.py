@@ -6,13 +6,8 @@ import subprocess
 import shutil
 # To use all the cpu cores available for parallel computing
 from multiprocessing import Pool
-import multiprocessing
 # Parse arguments
 import argparse
-# Round upwards
-import math
-# pyoxipng, some linux distributions don't include oxipng in the standard repo. (debian 11 for example)
-import oxipng
 # Wand, binding for imagemagick
 from wand.image import Image
 from wand.color import Color
@@ -231,23 +226,16 @@ elif file_format == "png":
     print("I will now start optimizing the png pictures")
 
     def optimize(image):
-        oxipng.optimize(image, level=5, strip=oxipng.StripChunks.safe())
-        shutil.move(image, "../output")
+        new_image = image[:-4] + ".png"
+        subprocess.run(["oxipng", image, "--out", "../output/" + new_image, "-t", "1"])
+        os.remove(image)
 
     if __name__ == "__main__":
-        if multiprocessing.cpu_count() <= 8:
-            with Pool(1) as pool:
-                for image in os.listdir():
-                    pool.apply_async(optimize, (image,))
-                pool.close()
-                pool.join()
-        else:
-            number_of_threads = int(math.ceil(multiprocessing.cpu_count()/8))
-            with Pool(number_of_threads) as pool:
-                for image in os.listdir():
-                    pool.apply_async(optimize, (image,))
-                pool.close()
-                pool.join()
+        with Pool() as pool:
+            for image in os.listdir():
+                pool.apply_async(optimize, (image,))
+            pool.close()
+            pool.join()
 
 optimizing_time_end = time.time()
 
