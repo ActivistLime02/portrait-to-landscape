@@ -25,7 +25,7 @@ os.nice(20)
 parser = argparse.ArgumentParser(description="Python script for editing pictures to a specific resolution by adding blur to the sides.")
 parser.add_argument("-x", "--width", required=True, type=int, dest="cmd_width")
 parser.add_argument("-y", "--height", required=True, type=int, dest="cmd_height")
-parser.add_argument("-f", "--file_format", choices=["png", "jxl"], required=True, type=str, dest="file_format")
+parser.add_argument("-f", "--file_format", choices=["png", "jxl", "webp"], required=True, type=str, dest="file_format")
 args = parser.parse_args()
 
 cmd_width = args.cmd_width
@@ -206,12 +206,29 @@ editing_time_end = time.time()
 optimizing_time_start = time.time()
 os.chdir("inbetween2")
 
+# Processing the final image
 if file_format == "jxl":
     print("I will now start processing files to jxl.")
 
     def optimize(image):
         new_image = image[:-4] + ".jxl"
         subprocess.run(["cjxl", image, new_image, "-d", "0", "-e", "8", "--num_threads=0"])
+        shutil.move(new_image, "../output")
+        os.remove(image)
+
+    if __name__ == "__main__":
+        with Pool() as pool:
+            for image in os.listdir():
+                pool.apply_async(optimize, (image,))
+            pool.close()
+            pool.join()
+
+if file_format == "webp":
+    print("I will now start processing files to webp.")
+
+    def optimize(image):
+        new_image = image[:-4] + ".webp"
+        subprocess.run(["cwebp", image, "-q", "95", "-m", "6", "-o", new_image])
         shutil.move(new_image, "../output")
         os.remove(image)
 
