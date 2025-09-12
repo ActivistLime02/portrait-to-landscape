@@ -37,6 +37,7 @@ The processed images will be in the output folder.
 - `oxipng`
 - `waifu2x-ncnn-vulkan`
 - `libjxl` (for cjxl)
+- `libwebp` (for cwebp)
 ## Warning
-Only tested on Linux, other UNIX like operating systems will probably work.
+I only tested this on Arch Linux. Other UNIX like operating systems will probably work if you have the correct packages installed.
 I'm pretty sure this will not work on Windows.
